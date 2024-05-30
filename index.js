@@ -20,16 +20,34 @@ app.get("/", (req, res) => {
 
 app.get("/file/:filename", (req, res) => {
     const filepath = path.join(__dirname, "files", req.params.filename);
-    console.log("Reading file:", filepath);  // Log the file path
+
     fs.readFile(filepath, "utf-8", (err, filedata) => {
         if (err) {
             console.log("Error reading file:", err);
             return res.status(500).send("Error reading file");
         }
-        console.log("File data:", filedata);  // Log the file data
+
         res.render("show", { filename: req.params.filename, filedata: filedata });
     });
 });
+
+
+app.get("/edit/:filename", (req, res) => {
+    res.render("edit", { filename: req.params.filename });
+});
+
+app.post("/edit", (req, res) => {
+
+    fs.rename(`./files/${req.body.previous}`, `./files/${req.body.new}`, (err) => {
+        if (err) throw err;
+        res.redirect("/");
+    });
+
+});
+
+
+
+
 
 app.post("/create", (req, res) => {
     const filename = `${req.body.title.split(' ').join('')}.txt`;
