@@ -1,34 +1,37 @@
-const express = require("express");
+const express = require('express');
 const app = express();
-const userModel = require("./usermodel");
+const path = require('path');
+const userModel = require('./models/user');
 
-app.get("/", (req, res) => {
-    res.send("Hello Mongo Db");
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.set('view engine', 'ejs');
+app.use(express.static(path.join(__dirname, 'public')));
+
+
+app.get('/', (req, res) => {
+    res.render('index');
 });
 
-app.get("/create", async (req, res) => {
-    let createduser = await userModel.create({
-        name: "harsh",
-        email: "harsh@gmail.com",
-        username: "harsh123"
+app.get('/read', async (req, res) => {
+    let users = await userModel.find();
+    res.render('read', { users });
+});
+app.get('/delete/:id', async (req, res) => {
+    let users = await userModel.findOneAndDelete({ _id: req.params.id });
+    res.redirect('/read');
+});
+
+app.post('/create', async (req, res) => {
+    let { name, email, image } = req.body;
+    let createdUser = await userModel.create({
+        name: name,
+        email: email,
+        image: image
     });
-    res.send(createduser);
+    res.redirect("/read");
 });
 
-app.get("/update", async (req, res) => {
-    let updatedUser = await userModel.findOneAndUpdate({ username: "ankit12" }, { username: "ankit1355 " }, { new: true });
-    res.send(updatedUser);
-});
-
-app.get("/read", async (req, res) => {
-    let allusers = await userModel.find();
-    res.send(allusers);
-});
-
-app.get("/delete", async (req, res) => {
-    let deleteduser = await userModel.findOneAndDelete({ username: "harsh123" });
-    res.send(deleteduser);
-});
 app.listen(3000, (req, res) => {
     console.log("Server listening on 3000");
 });
